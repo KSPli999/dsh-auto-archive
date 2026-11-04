@@ -95,6 +95,21 @@ plugin_manager  action: install_bundle  target: <这个包的绝对路径>
 | `excludeCwd` | `[]` | 路径命中这些片段的会话不碰 |
 | `includeCwd` | `[]` | 只处理这些目录下的会话；空 = 不限 |
 | `dryRun` | `false` | 只归档、不换窗口；想先看看效果就开它 |
+| `effort.enabled` | `true` | 思考强度自动切换总开关 |
+| `effort.normal` / `effort.hot` | `low` / `high` | 平时用哪个、色色时用哪个 |
+| `effort.hotMinutes` | `30` | 最后一句色色之后再保持 hot 多少分钟 |
+| `effort.model` / `effort.provider` | 空 | 空 = 沿用桥接 `config.json` 的 `dsh.model` / `dsh.provider` |
+| `effort.patterns` | `[]` | 自定义色色词表；空 = 用内置的 |
+
+## 思考强度是怎么切的
+
+```
+新窗口建好 ──► selectModel(normal, 默认 low)
+用户说了一句 ──► 命中词表 ──► selectModel(hot, 默认 high)，热度续到 now+30min
+    └─ 每 5 分钟（和每轮结束）看一眼，热度过了 ──► selectModel(normal)
+```
+
+只对 `state/sessions.json` 里能查到的桥接会话生效。桌面端的会话完全不碰。
 
 ## 桥接是怎么找到的
 
