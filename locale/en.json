@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "Session Auto-Archive",
-    "description": "When a conversation passes a set number of turns, archive the useful parts to Markdown and open a fresh session — so the context stops snowballing and the token bill stays sane."
+    "description": "When a conversation gets old (a day by default), archive the useful parts to Markdown and start a fresh window — so the context stops snowballing and the token bill stays sane. QQ-bridge chats roll over too, without losing the bridge's own long-term memory."
   }
 }

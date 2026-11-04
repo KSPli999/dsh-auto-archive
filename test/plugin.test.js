@@ -35,6 +35,8 @@ function 建事件(轮数) {
 }
 
 function 建沙盒(轮数, 配置 = {}) {
+  // 每个用例都当成全新进程：清掉「已翻篇」的持久记录，隔离测试。
+  rmSync(join(沙箱, 'auto-archive', 'rolled.json'), { force: true })
   const 事件 = 建事件(轮数)
   const session = {
     id: 'session-9',
@@ -68,7 +70,7 @@ function 建沙盒(轮数, 配置 = {}) {
           }
         : undefined,
   }
-  apply(ctx, 配置)
+  apply(ctx, { maxAgeHours: 0, newSession: true, ...配置 })
   return { session, 触发: () => 回调(session, { type: 'turn/end', data: {} }), 新会话, 投递 }
 }
 
