@@ -1,0 +1,4 @@
+- insert:
+    - id: auto-archive
+      name: dsh-auto-archive
+      config: {}

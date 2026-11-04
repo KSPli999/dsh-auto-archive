@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Session Auto-Archive",
+    "description": "When a conversation passes a set number of turns, archive the useful parts to Markdown and open a fresh session — so the context stops snowballing and the token bill stays sane."
+  }
+}
