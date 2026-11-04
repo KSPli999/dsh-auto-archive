@@ -7,8 +7,8 @@
 ## 它会做什么
 
 1. 盯住每个会话。两种触发方式：
-   - **按时间（默认）**：会话活过 `maxAgeHours`（默认 24 小时），并且已经安静 `minIdleMinutes`（默认 20 分钟），就翻篇。
-     「每天换个新窗口」是自动的，不用你记着换；也不会在你正聊着的时候把窗口抽走。
+   - **每天几点（默认）**：到了 `dailyAt`（默认 `03:00`）之后，把「这个点之前建的、已经安静 `minIdleMinutes`（默认 20 分钟）」的会话翻篇。
+     一天只翻一次，凌晨没人的时候换窗口；宿主中途重启 / 睡过去也不用管，醒来第一次扫描会补上。
    - **按轮数（可选，默认关）**：累计到 `maxTurns` 轮就翻篇（`maxTurns: 0` 表示关掉）。
 2. 翻篇前把它整理成一份 Markdown 归档：
    - 主题（第一句用户消息）
@@ -21,16 +21,19 @@
      下一条消息它会自己开一个新会话 —— 这才是 QQ 那边真正省 token 的地方。
    - **桌面/普通会话**：调 `sessionController.create()` 开一个新会话，沿用原来的工作目录和 agent preset。
 
+5. **记忆跟着走**：换窗口时把旧会话的记忆文件复制一份给新会话
+   （默认搬 `~/.dsh/fish-memory/<会话id>.json`，目录可用 `memoryDirs` 配）。
+   桥接的新会话是下一条消息才建的，所以插件会等 `session/created` 那一刻搬，最多再兜一层 60 秒轮询。
+
 整个过程**不调用模型**——归档是从会话日志里按规则抽的。省 token 的功能不能先烧一把 token。
 
 ## 记忆会不会丢
 
 - **QQ 那边不丢**：桥接自己的长期记忆在 `state/memory.jsonl`，是按对话 key（`group:…` / `private:…`）记的，
   换会话不换 key，记忆照旧注入。
+- **fish-memory 也不丢**：`~/.dsh/fish-memory/<会话id>.json` 会被复制给新会话（`memoryMigrate`，默认开）。
 - **归档可以翻**：昨天的原文都在 `~/.dsh/auto-archive/` 里，想查细节随时 grep。
-- **会丢的是**：`dsh-fish-memory` 那份是按 session id 存的，新会话等于从零开始；
-  以及昨天对话的逐字上下文（这本来就是翻篇要丢掉的东西）。
-  想保住更多，把 `maxAgeHours` 调大，或者告诉我，我再加一段「把旧会话的记忆文件带过去」。
+- **会丢的是**：昨天对话的逐字上下文 —— 这本来就是翻篇要丢掉的东西。
 
 ## 它不会做什么
 
@@ -73,7 +76,8 @@ plugin_manager  action: install_bundle  target: <这个包的绝对路径>
 | 字段 | 默认 | 说明 |
 | --- | --- | --- |
 | `enabled` | `true` | 总开关 |
-| `maxAgeHours` | `24` | 会话活过多少小时翻篇；`0` = 关掉按时间触发 |
+| `dailyAt` | `"03:00"` | 每天几点统一翻篇（本地时间）；`""` = 关掉按天翻篇 |
+| `maxAgeHours` | `0` | 另一个规则：会话活过多少小时翻篇；`0` = 关 |
 | `minIdleMinutes` | `20` | 至少安静多少分钟才动手，别打断正在聊的对话 |
 | `checkIntervalMinutes` | `10` | 多久扫一次 |
 | `maxTurns` | `0` | 按轮数触发；`0` = 关 |
@@ -84,6 +88,8 @@ plugin_manager  action: install_bundle  target: <这个包的绝对路径>
 | `archiveDir` | `""` | 归档目录；空 = `~/.dsh/auto-archive` |
 | `newSession` | `true` | 归档后要不要建新会话（桥接会话走桥接，不建） |
 | `bridgeReset` | `true` | QQ 桥接的会话：归档后让桥接作废映射，下一条消息开新会话 |
+| `memoryMigrate` | `true` | 换窗口时把旧会话的记忆文件复制给新会话 |
+| `memoryDirs` | `["fish-memory"]` | 家目录下哪些子目录算「记忆」 |
 | `handoffPrompt` | `false` | 建完新会话后把交接便条作为一条消息投进去（**会触发一次模型调用**） |
 | `oncePerSession` | `true` | 一个会话只翻一次；`false` = 每再涨 `maxTurns` 轮再翻 |
 | `excludeCwd` | `[]` | 路径命中这些片段的会话不碰 |
@@ -107,6 +113,7 @@ plugin_manager  action: install_bundle  target: <这个包的绝对路径>
 ├── index.jsonl                                    # 每次翻篇一行，机器可读
 ├── notice.log                                     # 每次翻篇一行，人可读
 ├── rolled.json                                    # 翻过篇的会话，7 天内不再翻
+├── pending-memory.json                            # 等着搬记忆的桥接对话（新会话还没建出来）
 └── C-Users-me-project-demo/
     └── 20261104-132005-session-9.md
 ```

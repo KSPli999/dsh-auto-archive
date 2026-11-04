@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0
+
+- **每天定点翻篇**：`dailyAt: "03:00"` —— 过了这个点，把这个点之前建的、已经安静的会话统一归档换窗口；一天一次，凌晨动手。
+- **记忆迁移**：换窗口时把 `~/.dsh/fish-memory/<会话id>.json` 复制给新会话（`memoryMigrate` / `memoryDirs`）。
+  桥接的新会话是下一条消息才建的，所以监听 `session/created` 当场搬，另有 60 秒轮询兜底，等待中的记录存在 `pending-memory.json`。
+- `maxAgeHours` 降级为可选规则，默认 `0`（关）。
+
 ## 0.2.0
 
 - **按时间翻篇**：会话活过 `maxAgeHours`（默认 24 小时）、安静 `minIdleMinutes`（默认 20 分钟）后自动归档并换窗口。定时扫描，不打断正在进行的对话。

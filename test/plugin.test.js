@@ -70,7 +70,7 @@ function 建沙盒(轮数, 配置 = {}) {
           }
         : undefined,
   }
-  apply(ctx, { maxAgeHours: 0, newSession: true, ...配置 })
+  apply(ctx, { dailyAt: '', maxAgeHours: 0, memoryMigrate: false, newSession: true, ...配置 })
   return { session, 触发: () => 回调(session, { type: 'turn/end', data: {} }), 新会话, 投递 }
 }
 
