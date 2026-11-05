@@ -2,10 +2,11 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
 import { 归一化配置, 该管这个目录 } from '../lib/config.js'
-import { 取主题, 取文字, 数轮数, 收对话, 造归档 } from '../lib/digest.js'
+import { 取主题, 取消息, 取文字, 数轮数, 收对话, 造归档 } from '../lib/digest.js'
 
 function 用户(text, time = 1) {
-  return { type: 'user/message', seq: time, time, data: { message: { role: 'user', content: [{ type: 'text', text }] } } }
+  // 真实 DSH 里 user/message 的 data 就是消息本身（扁平），不是 { message }。
+  return { type: 'user/message', seq: time, time, data: { role: 'user', content: [{ type: 'text', text }] } }
 }
 
 function 助手(text, time = 1) {
@@ -25,6 +26,17 @@ function 一轮(turn, 问, 答) {
     { type: 'turn/end', data: { turn, reason: { kind: 'completed' } } },
   ]
 }
+
+test('取消息：用户扁平、助手嵌套，两种都认', () => {
+  const 扁平 = { type: 'user/message', data: { role: 'user', content: [{ type: 'text', text: '你说呢' }] } }
+  const 嵌套 = {
+    type: 'assistant/message',
+    data: { message: { role: 'assistant', content: [{ type: 'text', text: '在呢' }] } },
+  }
+  assert.equal(取文字(取消息(扁平)), '你说呢')
+  assert.equal(取文字(取消息(嵌套)), '在呢')
+  assert.equal(取消息(null), null)
+})
 
 test('数轮数只数 turn/end', () => {
   const 事件 = [...一轮(1, '你好', '在呢'), ...一轮(2, '吃了吗', '刚吃完'), { type: 'turn/start', data: { turn: 3 } }]
