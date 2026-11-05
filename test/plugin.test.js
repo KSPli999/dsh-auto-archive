@@ -75,6 +75,7 @@ function 建沙盒(轮数, 配置 = {}) {
     maxAgeHours: 0,
     memoryMigrate: false,
     newSession: true,
+    bridgeOnly: false,
     effort: { enabled: false },
     ...配置,
   })

@@ -1,6 +1,6 @@
 {
   "name": "dsh-auto-archive",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Conversation-length guard for DeepSeek Harness: archive a long session to Markdown and open a fresh session before the context (and the bill) gets out of hand.",
   "keywords": [
     "deepseek-harness",
